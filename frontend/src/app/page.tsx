@@ -1,12 +1,9 @@
-import Sidebar from '@/components/layout/Sidebar';
+import AppShell from '@/components/layout/AppShell';
 
 export default function Home() {
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="p-6">
-        <p className="text-gray-500">Main content will go here.</p>
-      </main>
-    </div>
+    <AppShell>
+      <p className="text-gray-500">Main content will go here.</p>
+    </AppShell>
   );
 }
