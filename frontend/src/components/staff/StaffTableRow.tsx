@@ -2,7 +2,7 @@ import { Pencil, UserX, MoreHorizontal } from 'lucide-react';
 import { StaffMember } from '@/types/staff';
 import Badge from '@/components/ui/Badge';
 import AccountStatusIndicator from './AccountStatusIndicator';
-import { roleStyles } from '../lib/badgeStyles';
+import { roleStyles } from '@/lib/badgeStyles';
 
 interface StaffTableRowProps {
   staff: StaffMember;
