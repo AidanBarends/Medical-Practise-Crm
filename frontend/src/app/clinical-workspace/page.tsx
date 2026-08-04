@@ -1,3 +1,4 @@
+import AppShell from '@/components/layout/AppShell';
 import { getActivePatient } from '@/data/mockPatient';
 import PatientContextBar from '@/components/clinical/PatientContextBar';
 import ActiveMedicationsList from '@/components/clinical/ActiveMedicationsList';
@@ -8,7 +9,7 @@ export default async function ClinicalWorkspacePage() {
   const patient = await getActivePatient();
 
   return (
-    <div className="p-6">
+    <AppShell>
       <PatientContextBar patient={patient} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -21,6 +22,6 @@ export default async function ClinicalWorkspacePage() {
           <EncounterNotePanel />
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
