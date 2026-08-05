@@ -1,12 +1,11 @@
-'use client';
-
-import { useState } from 'react';
 import NoteHeader from './NoteHeader';
 import SoapSection from './SoapSection';
 import { SoapNote } from '@/types/clinical';
 
 interface ClinicalNoteEditorProps {
   sessionDate: string;
+  note: SoapNote;
+  onChange: (key: keyof SoapNote, value: string) => void;
 }
 
 const soapSections: {
@@ -41,18 +40,11 @@ const soapSections: {
   },
 ];
 
-export default function ClinicalNoteEditor({ sessionDate }: ClinicalNoteEditorProps) {
-  const [note, setNote] = useState<SoapNote>({
-    subjective: '',
-    objective: '',
-    assessment: '',
-    plan: '',
-  });
-
-  function updateField(key: keyof SoapNote, value: string) {
-    setNote((prev) => ({ ...prev, [key]: value }));
-  }
-
+export default function ClinicalNoteEditor({
+  sessionDate,
+  note,
+  onChange,
+}: ClinicalNoteEditorProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <NoteHeader sessionDate={sessionDate} />
@@ -63,7 +55,7 @@ export default function ClinicalNoteEditor({ sessionDate }: ClinicalNoteEditorPr
           dotColorClass={section.dotColorClass}
           placeholder={section.placeholder}
           value={note[section.key]}
-          onChange={(value) => updateField(section.key, value)}
+          onChange={(value) => onChange(section.key, value)}
         />
       ))}
     </div>
