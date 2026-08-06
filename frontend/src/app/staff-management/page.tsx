@@ -8,12 +8,23 @@ import StaffStatsGrid from '@/components/staff/StaffStatsGrid';
 import StaffFilterBar from '@/components/staff/StaffFilterBar';
 import StaffTable from '@/components/staff/StaffTable';
 import PaginationFooter from '@/components/staff/PaginationFooter';
+import StaffFormModal from '@/components/staff/StaffFormModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { getStaffMembers } from '@/data/mockStaff';
+import { exportStaffToCsv } from '@/lib/exportCsv';
 import { StaffMember, StaffRole, AccountStatus } from '@/types/staff';
 
 const PAGE_SIZE = 5;
 
-export default function Home() {
+function formatToday(): string {
+  return new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export default function StaffManagementPage() {
   const [allStaff, setAllStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,10 +43,12 @@ export default function Home() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<StaffRole | 'All Roles'>('All Roles');
-  const [statusFilter, setStatusFilter] = useState<AccountStatus | 'All Statuses'>(
-    'All Statuses'
-  );
+  const [statusFilter, setStatusFilter] = useState<AccountStatus | 'All Statuses'>('All Statuses');
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | undefined>(undefined);
+  const [deactivatingStaff, setDeactivatingStaff] = useState<StaffMember | null>(null);
 
   const filteredStaff = useMemo(() => {
     return allStaff.filter((member) => {
@@ -43,8 +56,7 @@ export default function Home() {
         member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRole = roleFilter === 'All Roles' || member.role === roleFilter;
-      const matchesStatus =
-        statusFilter === 'All Statuses' || member.status === statusFilter;
+      const matchesStatus = statusFilter === 'All Statuses' || member.status === statusFilter;
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [allStaff, searchTerm, roleFilter, statusFilter]);
@@ -58,9 +70,52 @@ export default function Home() {
   const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredStaff.length);
   const paginatedStaff = filteredStaff.slice(rangeStart - 1, rangeEnd);
 
+  function handleAddClick() {
+    setEditingStaff(undefined);
+    setIsFormOpen(true);
+  }
+
+  function handleEditClick(staff: StaffMember) {
+    setEditingStaff(staff);
+    setIsFormOpen(true);
+  }
+
+  function handleFormSubmit(data: Omit<StaffMember, 'id' | 'joinDate' | 'lastActive'>) {
+    if (editingStaff) {
+      setAllStaff((prev) =>
+        prev.map((member) =>
+          member.id === editingStaff.id ? { ...member, ...data } : member
+        )
+      );
+    } else {
+      const newStaff: StaffMember = {
+        ...data,
+        id: crypto.randomUUID(),
+        joinDate: formatToday(),
+        lastActive: 'Just now',
+      };
+      setAllStaff((prev) => [newStaff, ...prev]);
+    }
+    setIsFormOpen(false);
+  }
+
+  function handleDeactivateClick(staff: StaffMember) {
+    setDeactivatingStaff(staff);
+  }
+
+  function handleConfirmDeactivate() {
+    if (!deactivatingStaff) return;
+    setAllStaff((prev) =>
+      prev.map((member) =>
+        member.id === deactivatingStaff.id ? { ...member, status: 'Inactive' } : member
+      )
+    );
+    setDeactivatingStaff(null);
+  }
+
   return (
     <AppShell>
-      <StaffPageHeader />
+      <StaffPageHeader onAddClick={handleAddClick} />
       <StaffStatsGrid />
       <StaffFilterBar
         searchTerm={searchTerm}
@@ -79,7 +134,10 @@ export default function Home() {
               {filteredStaff.length} registered staff members found
             </p>
           </div>
-          <button className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700">
+          <button
+            onClick={() => exportStaffToCsv(filteredStaff)}
+            className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
             <Download className="h-4 w-4" />
             Export CSV
           </button>
@@ -91,7 +149,11 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <StaffTable staff={paginatedStaff} />
+            <StaffTable
+              staff={paginatedStaff}
+              onEdit={handleEditClick}
+              onDeactivate={handleDeactivateClick}
+            />
             <PaginationFooter
               rangeStart={rangeStart}
               rangeEnd={rangeEnd}
@@ -104,6 +166,27 @@ export default function Home() {
           </>
         )}
       </div>
+
+      <StaffFormModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        initialData={editingStaff}
+      />
+
+      <ConfirmDialog
+        isOpen={deactivatingStaff !== null}
+        title="Deactivate Staff Member"
+        message={
+          deactivatingStaff
+            ? `Are you sure you want to deactivate ${deactivatingStaff.name}? Their account status will be changed to Inactive.`
+            : ''
+        }
+        confirmLabel="Deactivate"
+        isDangerous
+        onConfirm={handleConfirmDeactivate}
+        onCancel={() => setDeactivatingStaff(null)}
+      />
     </AppShell>
   );
 }
