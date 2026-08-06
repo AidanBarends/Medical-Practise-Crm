@@ -3,11 +3,13 @@ import StaffTableRow from './StaffTableRow';
 
 interface StaffTableProps {
   staff: StaffMember[];
+  onEdit: (staff: StaffMember) => void;
+  onDeactivate: (staff: StaffMember) => void;
 }
 
 const headers = ['Staff Member', 'Role', 'Account Status', 'Join Date', 'Last Active', 'Actions'];
 
-export default function StaffTable({ staff }: StaffTableProps) {
+export default function StaffTable({ staff, onEdit, onDeactivate }: StaffTableProps) {
   if (staff.length === 0) {
     return (
       <div className="py-16 text-center text-sm text-gray-400">
@@ -30,7 +32,12 @@ export default function StaffTable({ staff }: StaffTableProps) {
         </thead>
         <tbody>
           {staff.map((member) => (
-            <StaffTableRow key={member.id} staff={member} />
+            <StaffTableRow
+              key={member.id}
+              staff={member}
+              onEdit={onEdit}
+              onDeactivate={onDeactivate}
+            />
           ))}
         </tbody>
       </table>
