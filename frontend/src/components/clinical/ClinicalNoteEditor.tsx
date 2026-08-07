@@ -6,6 +6,9 @@ interface ClinicalNoteEditorProps {
   sessionDate: string;
   note: SoapNote;
   onChange: (key: keyof SoapNote, value: string) => void;
+  attachedLabCount: number;
+  onAttachLabsClick: () => void;
+  onTemplatesClick: () => void;
 }
 
 const soapSections: {
@@ -44,10 +47,18 @@ export default function ClinicalNoteEditor({
   sessionDate,
   note,
   onChange,
+  attachedLabCount,
+  onAttachLabsClick,
+  onTemplatesClick,
 }: ClinicalNoteEditorProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <NoteHeader sessionDate={sessionDate} />
+      <NoteHeader
+        sessionDate={sessionDate}
+        attachedLabCount={attachedLabCount}
+        onAttachLabsClick={onAttachLabsClick}
+        onTemplatesClick={onTemplatesClick}
+      />
       {soapSections.map((section) => (
         <SoapSection
           key={section.key}
