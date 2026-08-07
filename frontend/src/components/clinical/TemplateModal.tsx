@@ -1,6 +1,7 @@
 import Modal from '@/components/ui/Modal';
-import { noteTemplates } from '@/data/noteTemplates';
 import { SoapNote } from '@/types/clinical';
+
+const noteTemplates: Array<{ id: string; name: string; description: string; content: SoapNote }> = [];
 
 interface TemplatesModalProps {
   isOpen: boolean;
